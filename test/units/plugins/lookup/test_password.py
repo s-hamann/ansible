@@ -118,6 +118,12 @@ old_style_params_data = (
         params=dict(length=password.DEFAULT_LENGTH, encrypt=None, chars=sorted([u'digits', u'abc', u'def'])),
         candidate_chars=u'abcdef0123456789',
     ),
+    dict(
+        term=u'/path/to/file seed=1',
+        filename=u'/path/to/file',
+        params=dict(length=password.DEFAULT_LENGTH, encrypt=None, chars=DEFAULT_CHARS, seed='1'),
+        candidate_chars=DEFAULT_CANDIDATE_CHARS,
+    ),
 
     # Including comma in chars
     dict(
@@ -279,6 +285,13 @@ class TestRandomPassword(unittest.TestCase):
         res = password.random_password(length=11, chars=u'くらとみ')
         self._assert_valid_chars(res, u'くらとみ')
         self.assertEqual(len(res), 11)
+
+    def test_seed(self):
+        pw1 = password.random_password(seed=1)
+        pw2 = password.random_password(seed=1)
+        pw3 = password.random_password(seed=2)
+        self.assertEqual(pw1, pw2)
+        self.assertNotEqual(pw1, pw3)
 
     def test_gen_password(self):
         for testcase in old_style_params_data:

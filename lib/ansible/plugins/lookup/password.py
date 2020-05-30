@@ -45,6 +45,12 @@ DOCUMENTATION = """
         description: The length of the generated password.
         default: 20
         type: integer
+      seed:
+        version_added: "2.10"
+        description:
+          - A seed to initialize the random number generator.
+          - Identical seeds will yield identical passwords.
+          - Use this for random-but-idempotent password generation.
     notes:
       - A great alternative to the password lookup plugin,
         if you don't need to generate random passwords on a per-host basis,
@@ -107,7 +113,7 @@ from ansible.utils.path import makedirs_safe
 
 
 DEFAULT_LENGTH = 20
-VALID_PARAMS = frozenset(('length', 'encrypt', 'chars'))
+VALID_PARAMS = frozenset(('length', 'encrypt', 'chars', 'seed'))
 
 
 def _parse_parameters(term):
@@ -145,6 +151,7 @@ def _parse_parameters(term):
     # Set defaults
     params['length'] = int(params.get('length', DEFAULT_LENGTH))
     params['encrypt'] = params.get('encrypt', None)
+    params['seed'] = params.get('seed', None)
 
     params['chars'] = params.get('chars', None)
     if params['chars']:
@@ -314,7 +321,7 @@ class LookupModule(LookupBase):
             content = _read_password_file(b_path)
 
             if content is None or b_path == to_bytes('/dev/null'):
-                plaintext_password = random_password(params['length'], chars)
+                plaintext_password = random_password(params['length'], chars, params['seed'])
                 salt = None
                 changed = True
             else:
